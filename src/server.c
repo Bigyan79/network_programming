@@ -4,13 +4,29 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
+DWORD WINAPI handle_client(LPVOID socket_ptr)
+{
+    SOCKET client_sock = *(SOCKET *)socket_ptr;
+    char buffer[512];
+
+    int bytes = recv(client_sock, buffer, sizeof(buffer) - 1, 0);
+    buffer[bytes] = '\0';
+    printf("Message from client:%s\n", buffer);
+
+    char *reply = "This is server handling multiple clients!";
+    send(client_sock, reply, strlen(reply), 0);
+    printf("Reply sent!\n");
+
+    closesocket(client_sock);
+    return 0;
+}
+
 int main()
 {
     struct WSAData wsa;
     SOCKET server_sock, client_sock;
     struct sockaddr_in server_addr, client_addr;
     int client_addr_len = sizeof(client_addr);
-    char buffer[512];
 
     WSAStartup(MAKEWORD(2, 2), &wsa);
 
@@ -24,18 +40,14 @@ int main()
     listen(server_sock, 1);
     printf("Server listening on port 8080");
 
-    client_sock = accept(server_sock, (struct sockaddr *)&client_addr, &client_addr_len);
-    printf("Client Connected");
+    while (1)
+    {
+        client_sock = accept(server_sock, (struct sockaddr *)&client_addr, &client_addr_len);
+        printf("Client is connected");
 
-    int bytes = recv(client_sock, buffer, sizeof(buffer) - 1, 0);
-    buffer[bytes] = '\0';
-    printf("message from client is:%s\n", buffer);
+        CreateThread(NULL, 0, handle_client, &client_sock, 0, NULL);
+    }
 
-    char *reply = "Hello from server";
-    send(client_sock, reply, strlen(reply), 0);
-    printf("Reply sent!\n");
-
-    closesocket(client_sock);
     closesocket(server_sock);
     WSACleanup();
 
