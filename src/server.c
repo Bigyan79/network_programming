@@ -7,14 +7,25 @@
 DWORD WINAPI handle_client(LPVOID socket_ptr)
 {
     SOCKET client_sock = *(SOCKET *)socket_ptr;
-    char buffer[512];
+    free(socket_ptr);
+    char buffer[4096];
 
     int bytes = recv(client_sock, buffer, sizeof(buffer) - 1, 0);
+    printf("bytes received: %d\n", bytes);
+
+    if (bytes <= 0)
+    {
+        printf("recv failed or connection closed\n");
+        closesocket(client_sock);
+        return 0;
+    }
+
     buffer[bytes] = '\0';
     printf("Message from client:%s\n", buffer);
 
-    char *reply = "This is server handling multiple clients!";
-    send(client_sock, reply, strlen(reply), 0);
+    char *reply = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<h1>Hello from server!</h1>";
+    int sent = send(client_sock, reply, strlen(reply), 0);
+    printf("bytes sent: %d\n", sent);
     printf("Reply sent!\n");
 
     closesocket(client_sock);
@@ -44,8 +55,10 @@ int main()
     {
         client_sock = accept(server_sock, (struct sockaddr *)&client_addr, &client_addr_len);
         printf("Client is connected");
+        SOCKET *client_sock_ptr = malloc(sizeof(SOCKET));
+        *client_sock_ptr = client_sock;
 
-        CreateThread(NULL, 0, handle_client, &client_sock, 0, NULL);
+        CreateThread(NULL, 0, handle_client, client_sock_ptr, 0, NULL);
     }
 
     closesocket(server_sock);
