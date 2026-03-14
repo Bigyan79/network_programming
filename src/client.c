@@ -27,7 +27,7 @@ int main()
 
     char buffer[512];
     int bytes = recv(sock, buffer, sizeof(buffer) - 1, 0);
-    buffer[bytes] = '0';
+    buffer[bytes] = '\0';
     printf("Replyy from server:%s\n", buffer);
 
     closesocket(sock);

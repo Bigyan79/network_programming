@@ -37,7 +37,7 @@ int main()
 
     closesocket(client_sock);
     closesocket(server_sock);
-    WSACleanup;
+    WSACleanup();
 
     return 0;
 }
