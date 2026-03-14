@@ -31,6 +31,10 @@ int main()
     buffer[bytes] = '\0';
     printf("message from client is:%s\n", buffer);
 
+    char *reply = "Hello from server";
+    send(client_sock, reply, strlen(reply), 0);
+    printf("Reply sent!\n");
+
     closesocket(client_sock);
     closesocket(server_sock);
     WSACleanup;

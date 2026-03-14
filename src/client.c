@@ -25,6 +25,11 @@ int main()
     send(sock, message, strlen(message), 0);
     printf("message sent:%s\n", message);
 
+    char buffer[512];
+    int bytes = recv(sock, buffer, sizeof(buffer) - 1, 0);
+    buffer[bytes] = '0';
+    printf("Replyy from server:%s\n", buffer);
+
     closesocket(sock);
     WSACleanup();
 
